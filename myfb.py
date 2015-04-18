@@ -4,7 +4,6 @@ import facepy
 import auth
 import requests
 from datetime import datetime, timedelta
-import mylogger
 
 
 class MyFB:
@@ -15,7 +14,6 @@ class MyFB:
         self.extended_token = extended_token
         self.extended_token_time = self.unix_time + timedelta(seconds=extended_token_time)
         self.machine_id = self.myAuth.get_facebook_machine_id()
-        self.logger = mylogger.MyLogger.setupLogger('myfb')
 
     def get_extended_token(self):
         expiry_time = int((self.extended_token_time - self.unix_time).total_seconds())
@@ -57,10 +55,6 @@ class MyFB:
         fb_graph = facepy.GraphAPI(self.extended_token)
         fb_update = title + '\n\n' + url
         fb_image = image_url
-        self.logger.debug("Facebook Status update is --- {}".format(fb_update))
-        self.logger.debug("Attached image is --- {}".format(fb_image))
-        self.logger.debug("Created time is --- {}".format(created_time))
-        self.logger.debug("Updated time is --- {}".format(updated_time))
         fb_graph.post(
             'me/feed',
             message=fb_update,

@@ -4,7 +4,6 @@ import json
 import signal
 import sys
 import logging
-import mylogger
 import mygplus
 import mytwitter
 import myfb
@@ -32,7 +31,6 @@ def fetch_and_post(gplus_user_id):
     global LAST_POST_ID
     global FB_EXTENDED_TOKEN
     global FB_EXTENDED_TOKEN_TIME
-    my_logger = mylogger.MyLogger.setupLogger('fetch_and_post')
     print("LAST_POST_ID is - {}".format(LAST_POST_ID))
 
     try:
@@ -63,7 +61,6 @@ def fetch_and_post(gplus_user_id):
         url = activity['url']
         created_time = activity['published']
         updated_time = activity['updated']
-        my_logger.debug("attachments[0] --- {}".format(activity['object']['attachments'][0].get('fullImage', 'NOIMAGE')))
 
         if activity['object'].get('attachments', '') == '':
             print("No attachments found !")
@@ -76,7 +73,6 @@ def fetch_and_post(gplus_user_id):
             else:
                 url_image = activity['object']['attachments'][0]['fullImage']['url']
                 print("Attached image found")
-                my_logger.debug("Attached image is - {}".format(url_image))
 
         print(title)
         print(url)
@@ -116,8 +112,6 @@ def main():
     time_interval = int(json_data['interval'])
     gplus_user_id = json_data['gplus_user_id']
 
-
-    main_logger = mylogger.MyLogger.setupLogger('mainclient')
     print("Last post id from args is - {}".format(LAST_POST_ID))
     my_scheduler = BlockingScheduler(timezone='UTC')
     my_scheduler.add_job(
