@@ -17,56 +17,68 @@ FB_EXTENDED_TOKEN_TIME = 0
 
 
 def parseArgs():
+    '''parse the args'''
+
     parser = argparse.ArgumentParser()
     parser.add_argument('conf')
     args = parser.parse_args()
     return args
 
 def parse_gplus_data(one_activity):
-
-    type_of_post_attachment = {
-        "article":[
-            one_activity['object']['attachments'][0].get('fullImage',''),
-            one_activity['object']['attachments'][0]['fullImage']['url']
-        ],
-        "video": [
-            one_activity['object']['attachments'][0].get('image',''),
-            one_activity['object']['attachments'][0]['image']['url']
-        ],
-        "photo": [
-            one_activity['object']['attachments'][0].get('fullImage',''),
-            one_activity['object']['attachments'][0]['fullImage']['url']
-        ],
-        "album": [
-            one_activity['object']['attachments'][0].get('thumbnails',''),
-            one_activity['object']['attachments'][0]['thumbnails'][0]['image']['url']
-        ],
-    }
-
+    '''parse gplus data to get image'''
 
     title = one_activity['title']
     url = one_activity['url']
     created_time = one_activity['published']
     updated_time = one_activity['updated']
 
-    object_type = one_activity['object'].get('object_type')
+    object_type = one_activity['object'].get('objectType', 'NULL')
     print("Object type is --- {}".format(object_type))
+    if object_type == 'activity':
+        if one_activity.get('annotation', '') == '':
+            print('No annotation found, doing nothing')
+        else:
+            title = ' '.join([one_activity['annotation'], '-', title])
+            print('Annotation found, adding as prefix to title')
     if one_activity['object'].get('attachments', '') == '':
         print("No attachments found !")
         url_image = ''
     else:
-        attachment_type = one_activity['object']['attachments'][0].get('object_type')
+        attachment_type = one_activity['object']['attachments'][0].get('objectType', 'NULL')
         print("Attachment type is --- {}".format(attachment_type))
         print("Attachments, found, trying to get an image...")
-        post_type = type_of_post_attachment[attachment_type][0]
+        type_of_post = {
+            "article":[
+                one_activity['object']['attachments'][0].get('fullImage',''),
+            ],
+            "video": [
+                one_activity['object']['attachments'][0].get('image',''),
+            ],
+            "photo": [
+                one_activity['object']['attachments'][0].get('fullImage',''),
+            ],
+            "album": [
+                one_activity['object']['attachments'][0].get('thumbnails',''),
+            ],
+        }
+
+        post_type = type_of_post[attachment_type]
         if post_type == '':
             url_image = ''
             print("Attached image NOT found, using empty url")
         else:
-            url_image = type_of_post_attachment[attachment_type][1]
+            if attachment_type == 'video':
+                url_image = one_activity['object']['attachments'][0]['image']['url']
+            elif attachment_type == 'album':
+                one_activity['object']['attachments'][0]['thumbnails'][0]['image']['url']
+            else:
+                url_image = one_activity['object']['attachments'][0]['fullImage']['url']
+
+            ### else includes attachment_type for article/photo and everything else
             print("Attached image found")
 
     return [title, url, url_image, created_time, updated_time]
+
 
 def fetch_and_post(gplus_user_id):
     '''Fetching google plus posts
@@ -109,12 +121,14 @@ def fetch_and_post(gplus_user_id):
         print(url_image)
         try:
             my_twitter.post_to_twitter(title, url, url_image)
+            print("Twitter post done")
         except Exception as errObj:
             print("Error posting to Twitter")
             print(errObj)
 
         try:
             my_fb.post_to_fb(title, url, url_image, created_time, updated_time)
+            print("facebook post done")
         except Exception as errObj:
             print("Error posting to Facebook")
             print(errObj)
