@@ -22,6 +22,51 @@ def parseArgs():
     args = parser.parse_args()
     return args
 
+def parse_gplus_data(one_activity):
+
+    type_of_post_attachment = {
+        "article":[
+            one_activity['object']['attachments'][0].get('fullImage',''),
+            one_activity['object']['attachments'][0]['fullImage']['url']
+        ],
+        "video": [
+            one_activity['object']['attachments'][0].get('image',''),
+            one_activity['object']['attachments'][0]['image']['url']
+        ],
+        "photo": [
+            one_activity['object']['attachments'][0].get('fullImage',''),
+            one_activity['object']['attachments'][0]['fullImage']['url']
+        ],
+        "album": [
+            one_activity['object']['attachments'][0].get('thumbnails',''),
+            one_activity['object']['attachments'][0]['thumbnails'][0]['image']['url']
+        ],
+    }
+
+
+    title = one_activity['title']
+    url = one_activity['url']
+    created_time = one_activity['published']
+    updated_time = one_activity['updated']
+
+    object_type = one_activity['object'].get('object_type')
+    print("Object type is --- {}".format(object_type))
+    if one_activity['object'].get('attachments', '') == '':
+        print("No attachments found !")
+        url_image = ''
+    else:
+        attachment_type = one_activity['object']['attachments'][0].get('object_type')
+        print("Attachment type is --- {}".format(attachment_type))
+        print("Attachments, found, trying to get an image...")
+        post_type = type_of_post_attachment[attachment_type][0]
+        if post_type == '':
+            url_image = ''
+            print("Attached image NOT found, using empty url")
+        else:
+            url_image = type_of_post_attachment[attachment_type][1]
+            print("Attached image found")
+
+    return [title, url, url_image, created_time, updated_time]
 
 def fetch_and_post(gplus_user_id):
     '''Fetching google plus posts
@@ -57,22 +102,7 @@ def fetch_and_post(gplus_user_id):
 
     for activity in my_activites:
         print("\n--------STARTING --------")
-        title = activity['title']
-        url = activity['url']
-        created_time = activity['published']
-        updated_time = activity['updated']
-
-        if activity['object'].get('attachments', '') == '':
-            print("No attachments found !")
-            url_image = ''
-        else:
-            print("Attachments, found, trying to get fullImage...")
-            if activity['object']['attachments'][0].get('fullImage', '') == '':
-                url_image = ''
-                print("Attached image NOT found, using empty url")
-            else:
-                url_image = activity['object']['attachments'][0]['fullImage']['url']
-                print("Attached image found")
+        title, url, url_image, created_time, updated_time = parse_gplus_data(activity)
 
         print(title)
         print(url)
