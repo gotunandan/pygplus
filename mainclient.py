@@ -113,6 +113,7 @@ def main():
     gplus_user_id = json_data['gplus_user_id']
 
     print("Last post id from args is - {}".format(LAST_POST_ID))
+    fetch_and_post(gplus_user_id)
     my_scheduler = BlockingScheduler(timezone='UTC')
     my_scheduler.add_job(
         fetch_and_post,
