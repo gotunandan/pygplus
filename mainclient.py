@@ -29,6 +29,7 @@ def parse_gplus_data(one_activity):
 
     title = one_activity['title']
     url = one_activity['url']
+    url_image = ''
     created_time = one_activity['published']
     updated_time = one_activity['updated']
 
@@ -40,6 +41,7 @@ def parse_gplus_data(one_activity):
         else:
             title = ' '.join([one_activity['annotation'], '-', title])
             print('Annotation found, adding as prefix to title')
+
     if one_activity['object'].get('attachments', '') == '':
         print("No attachments found !")
         url_image = ''
@@ -62,20 +64,30 @@ def parse_gplus_data(one_activity):
             ],
         }
 
+        if one_activity['object']['attachments'][0].get('url', '') == '':
+            print("No url found to add to title")
+        else:
+            print("URL found, appending to title")
+            title = ' '.join([title, one_activity['object']['attachments'][0].get('url', '')])
+
         post_type = type_of_post[attachment_type]
         if post_type == '':
             url_image = ''
             print("Attached image NOT found, using empty url")
         else:
+            print("Attached image found")
             if attachment_type == 'video':
                 url_image = one_activity['object']['attachments'][0]['image']['url']
             elif attachment_type == 'album':
-                one_activity['object']['attachments'][0]['thumbnails'][0]['image']['url']
+                url_image = one_activity['object']['attachments'][0]['thumbnails'][0]['image']['url']
             else:
-                url_image = one_activity['object']['attachments'][0]['fullImage']['url']
-
-            ### else includes attachment_type for article/photo and everything else
-            print("Attached image found")
+                ### else includes attachment_type for article/photo and everything else
+                if one_activity['object']['attachments'][0].get('fullImage','') == '':
+                    url_image = ''
+                    print("full image not found")
+                else:
+                    url_image = one_activity['object']['attachments'][0]['fullImage']['url']
+                    print("full image found")
 
     return [title, url, url_image, created_time, updated_time]
 
