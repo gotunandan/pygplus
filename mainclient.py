@@ -14,6 +14,7 @@ logging.basicConfig()
 LAST_POST_ID = ''
 FB_EXTENDED_TOKEN = ''
 FB_EXTENDED_TOKEN_TIME = 0
+FB_EXTENDED_TOKEN_FLAG = 0
 
 
 def parseArgs():
@@ -100,6 +101,7 @@ def fetch_and_post(gplus_user_id):
     global LAST_POST_ID
     global FB_EXTENDED_TOKEN
     global FB_EXTENDED_TOKEN_TIME
+    global FB_EXTENDED_TOKEN_FLAG
     print("LAST_POST_ID is - {}".format(LAST_POST_ID))
 
     try:
@@ -122,7 +124,8 @@ def fetch_and_post(gplus_user_id):
     my_twitter = mytwitter.MyTwitter()
     print("Extended token is --- {}".format(FB_EXTENDED_TOKEN))
     print("Extended time is --- {}".format(FB_EXTENDED_TOKEN_TIME))
-    my_fb = myfb.MyFB(FB_EXTENDED_TOKEN, FB_EXTENDED_TOKEN_TIME)
+    print("Extended FLAG is --- {}".format(FB_EXTENDED_TOKEN_FLAG))
+    my_fb = myfb.MyFB(FB_EXTENDED_TOKEN, FB_EXTENDED_TOKEN_TIME, FB_EXTENDED_TOKEN_FLAG)
 
     for activity in my_activites:
         print("\n--------STARTING --------")
@@ -144,10 +147,18 @@ def fetch_and_post(gplus_user_id):
         except Exception as errObj:
             print("Error posting to Facebook")
             print(errObj)
+            print(sys.exc_info())
+            print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno))
+            exc_info = sys.exc_info()
+        finally:
+            print("finally done")
+            # Display the *original* exception
+            # traceback.print_exception(*exc_info)
+            # del exc_info
 
         print("--------ENDING --------\n")
 
-    FB_EXTENDED_TOKEN, FB_EXTENDED_TOKEN_TIME = my_fb.get_extended_token()
+    FB_EXTENDED_TOKEN, FB_EXTENDED_TOKEN_TIME, FB_EXTENDED_TOKEN_FLAG = my_fb.get_extended_token()
 
 
 def main():
@@ -158,12 +169,14 @@ def main():
     global LAST_POST_ID
     global FB_EXTENDED_TOKEN
     global FB_EXTENDED_TOKEN_TIME
+    global FB_EXTENDED_TOKEN_FLAG
 
     with open(config_file) as json_file:
         json_data = json.load(json_file)
 
     FB_EXTENDED_TOKEN = json_data['facebook_extended_token']
     FB_EXTENDED_TOKEN_TIME = json_data['facebook_extended_token_time']
+    FB_EXTENDED_TOKEN_FLAG = json_data['facebook_extended_token_flag']
     LAST_POST_ID = json_data['last_post_id']
     time_interval = int(json_data['interval'])
     gplus_user_id = json_data['gplus_user_id']
