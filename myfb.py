@@ -46,7 +46,7 @@ class MyFB:
 
     def check_extended_token(self):
         time_now = datetime.now()
-        days2_ahead = time_now + timedelta(days=1)
+        days2_ahead = time_now + timedelta(days=10)
         print("datetime now is --- {}".format(time_now))
         print("datetime 2 days ahead is --- {}".format(days2_ahead))
         print("extended time is ---- {}".format(self.extended_token_time))
