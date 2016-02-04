@@ -1,8 +1,8 @@
 
-
+import json
+import requests
 import facepy
 import auth
-import requests
 from datetime import datetime, timedelta
 
 
@@ -27,9 +27,9 @@ class MyFB:
             "&redirect_uri=" + self.myAuth.get_facebook_redirect_uri() +\
             "&client_id=" + self.myAuth.get_facebook_app_id()
         my_session = requests.Session()
-        requested_data = my_session.get(link1).content
+        requested_data = json.loads(my_session.get(link1).content)
         print("Requested data is --- {}".format(requested_data))
-        my_code = requested_data['code']
+        my_code = str(requested_data['code'])
 
         link2 ="https://graph.facebook.com/oauth/access_token?" +\
             "code=" + my_code +\
@@ -37,10 +37,10 @@ class MyFB:
             "&redirect_uri=" + self.myAuth.get_facebook_redirect_uri() +\
             "&machine_id=" + self.machine_id
         my_session = requests.Session()
-        requested_data = my_session.get(link2).content
-
-        self.machine_id = requested_data['machine_id']
-        self.extended_token = requested_data['access_token']
+        requested_data = json.loads(my_session.get(link2).content)
+        print("Requested data is --- {}".format(requested_data))
+        self.machine_id = str(requested_data['machine_id'])
+        self.extended_token = str(requested_data['access_token'])
         self.extended_token_time = datetime.now() + timedelta(seconds=requested_data['expires_in'])
         self.extended_token_flag = 1
 
